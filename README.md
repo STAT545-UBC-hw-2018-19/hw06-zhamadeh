@@ -1,4 +1,5 @@
 # Homwork Assignment 06 
+This is the repo for assignment #6 for STAT547
 
 Here is a [link](https://github.com/STAT545-UBC-students/hw06-zhamadeh/blob/master/hw06-zhamadeh.md) to the md file. 
 

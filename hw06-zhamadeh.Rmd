@@ -6,7 +6,7 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Comparing a function for linear regression vs robust linear regression of life expectancy on GDP per capita
+## Comparing a function for linear regression vs robust linear regression of life expectancy on GDP per capita in a nested dataframe
 
 * Overview
 * Loading required packages
@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 * Expanding our model to fit multi-country data
 
 #### Overview
-To fufill prompt #2, we are going to build a function that can take in data on multiple countries and create a linear regression model for predicting life Expectancy based on GDP per capita
+To fufill prompt #2 and #6, we are going to build a function that can take in data on nested data for multiple countries and create a linear regression model for predicting life Expectancy based on GDP per capita
 
 #### Loading required packages
 
@@ -77,6 +77,8 @@ regr.eval(test_rwanda$lifeExp, lin_reg_mod(test_rwanda))
 regr.eval(test_rwanda$lifeExp, rob_lin_mod(test_rwanda))
 ```
 
+
+
 Here, we see the results we expected. Robust linear regression has lower measures of error because it weighs down outlier observations from skewing the model too much. Knowing Rwanda has some outliers in life expectancy seen below in the plot of life expectancy vs gdp per capita, robust linear was effective. Now lets extrapolate this model to take multi-country datasets.
 
 ```{r}
@@ -97,7 +99,6 @@ rob_lin_all <- function(data) {
 
 head(rob_lin_all(gapminder))
 ```
-
 
 
 

@@ -1,8 +1,8 @@
 Homework Assignment \#6 for STAT 547
 ================
 
-Comparing a function for linear regression vs robust linear regression of life expectancy on GDP per capita
------------------------------------------------------------------------------------------------------------
+Comparing a function for linear regression vs robust linear regression of life expectancy on GDP per capita in a nested dataframe
+---------------------------------------------------------------------------------------------------------------------------------
 
 -   Overview
 -   Loading required packages
@@ -13,7 +13,7 @@ Comparing a function for linear regression vs robust linear regression of life e
 
 #### Overview
 
-To fufill prompt \#2, we are going to build a function that can take in data on multiple countries and create a linear regression model for predicting life Expectancy based on GDP per capita
+To fufill prompt \#2 and \#6, we are going to build a function that can take in data on nested data for multiple countries and create a linear regression model for predicting life Expectancy based on GDP per capita
 
 #### Loading required packages
 

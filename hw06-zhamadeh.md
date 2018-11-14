@@ -170,10 +170,10 @@ Then we will add a new column called fit that will apply our linear regression m
 ``` r
 #create mutated nest dataframe that adds columns for linear regression analysis
 gap_lm_coef <- nest_gap %>% 
-  mutate(fit = map(data, rob_lin_mod),
-         tidy = map(fit, tidy)) %>% 
-  dplyr::select(continent, country, tidy) %>% 
-  unnest(tidy) %>% #unnest tidy column
+  mutate(lm = map(data, rob_lin_mod),
+         tidy_lm = map(lm, tidy)) %>% 
+  dplyr::select(continent, country, tidy_lm) %>% 
+  unnest(tidy_lm) %>% #unnest tidy column
   mutate(term = recode(term,
                         `(Intercept)` = "intercept",
                         `I(year - 1945)` = "slope")) %>%

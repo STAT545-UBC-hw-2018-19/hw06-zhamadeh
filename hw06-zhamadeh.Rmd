@@ -14,9 +14,10 @@ knitr::opts_chunk$set(echo = TRUE)
 * Creating a regular and robust linear regression model for our filtered data
 * Comparing robust and regular linear regression
 * Expanding our model to fit multi-country data
+* Working with nested dataframe
 
 #### Overview
-To fufill prompt #2 and #6, we are going to build a function that can take in data on nested data for multiple countries and create a linear regression model for predicting life Expectancy based on GDP per capita
+To fufill prompt #2, we are going to build a function that can take in data on multiple countries and create a linear regression model for predicting life Expectancy based on GDP per capita. Then for prompt #6, we will apply these methods to a nested dataframe 
 
 #### Loading required packages
 
@@ -25,8 +26,9 @@ suppressPackageStartupMessages(library(gapminder))
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(broom))
-suppressPackageStartupMessages(library(DMwR))
 suppressPackageStartupMessages(library(MASS))
+suppressPackageStartupMessages(library(DMwR))
+
 ```
 
 #### Creating a filtered uni-country dataset and plotting
@@ -36,22 +38,24 @@ We will choose Canada for this example, and use dplyr methods to extract this in
 can_gap <- gapminder %>%
   filter(country == "Canada") #filtered dataset for Canada
 
-ggplot(can_gap, aes(gdpPercap, lifeExp)) + 
+ggplot(can_gap, aes(year, gdpPercap)) + 
   geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) #linear model to fit scatterplot of lifeExp vs gdpPercap
+  geom_smooth(method = "lm", se = FALSE) + #linear model to fit scatterplot of  year vs gdpPercap 
+  labs(title = "Canadian GDP per capita vs year", x="Year", y="GDP per capita") +
+  theme_bw()
 ```
 
 #### Creating a robust and regular linear regression model for our filtered data
 Here, we create our models as functions. Firstly, our linear regression model takes in data and has a starting year (1945 in this case). We create a variable, `fit`, to create a linear model of life expectancy and GDP per capita beginning in the starting year. Then we simply set the names of our linear model values to intercept and slope. Next, repeat this but using the robust linear model function. 
 
 ```{r}
-lin_reg_mod <- function(data, starting_year = 1945) {
-  fit <- lm(lifeExp ~ I(year - starting_year), data)
+lin_reg_mod <- function(df) {
+  fit <- lm(gdpPercap ~ I(year - 1945), data = df)
   setNames(data.frame(t(coef(fit))), c("intercept","slope"))
 }
 
-rob_lin_mod <- function(data, starting_year = 1945) {
-  fit <- rlm(lifeExp ~ I(year - starting_year), data)
+rob_lin_mod <- function(df) {
+  fit <- rlm(gdpPercap ~ I(year - 1945), data = df)
   setNames(data.frame(t(coef(fit))), c("intercept","slope"))
 }
 
@@ -82,23 +86,61 @@ regr.eval(test_rwanda$lifeExp, rob_lin_mod(test_rwanda))
 Here, we see the results we expected. Robust linear regression has lower measures of error because it weighs down outlier observations from skewing the model too much. Knowing Rwanda has some outliers in life expectancy seen below in the plot of life expectancy vs gdp per capita, robust linear was effective. Now lets extrapolate this model to take multi-country datasets.
 
 ```{r}
-ggplot(test_rwanda, aes(gdpPercap, lifeExp)) +
+ggplot(test_rwanda, aes(year, gdpPercap)) +
   geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Rwandan GDP per capita vs year", x="Year", y="GDP per capita") +
+  theme_bw()
 ```
 
 #### Expanding our model to fit multi-country data
 Here, lets use the `do()` method in combination with the `group_by()` method that will group input data by country. The `do()` method will apply our previously defined robust linear regression function to all observations within a given country and repeat this for every country. We can see from the first few observations that we know have the slope and intercept of our linear regression model for every country.
 
 ```{r}
-rob_lin_all <- function(data) {
-  data %>%
-    group_by(country) %>%
-    do(rob_lin_mod(.))
+rob_lin_all <- function(input_data) {
+  input_data %>%
+  group_by(country) %>%
+  do(lin_reg_mod(.))
 }
+knitr::kable(head(rob_lin_all(gapminder), n=10))
 
-head(rob_lin_all(gapminder))
 ```
+
+#### Working with nested dataframe
+First we must group gapminder by country and continent and then we use the `nest()` function to create a nested dataframe that stores all remaining columns for each country in a tibble known as data. Lets also recreate our robust linear model function.
+
+```{r}
+#create nested dataframe
+nest_gap <- gapminder %>%
+  group_by(continent, country) %>%
+  nest()
+
+#recreate robust linear regression model
+rob_lin_mod <- function(df) {
+  fit <- rlm(gdpPercap ~ I(year - 1945), data = df)
+}
+```
+
+Then we will add a new column called fit that will apply our linear regression model to each country using the `map()` function. Then we will create a tidy column that applies the tidy function to the output of the fit column. Finally, we selected only the continent, country and tidy column and unnest the tidy column. From here, we can rename our two columns and select only from continent to estimate. Then we spread out the term column into a intercept and slope column and we have our final product: robust linear regression on gapminder data.
+
+```{r warning = FALSE}
+#create mutated nest dataframe that adds columns for linear regression analysis
+gap_lm_coef <- nest_gap %>% 
+  mutate(fit = map(data, rob_lin_mod),
+         tidy = map(fit, tidy)) %>% 
+  dplyr::select(continent, country, tidy) %>% 
+  unnest(tidy) %>% #unnest tidy column
+  mutate(term = recode(term,
+                        `(Intercept)` = "intercept",
+                        `I(year - 1945)` = "slope")) %>%
+  dplyr::select(continent:estimate) %>% 
+  spread(key = term, value = estimate)
+
+knitr::kable(head(gap_lm_coef,n=20))
+
+```
+
+
 
 
 

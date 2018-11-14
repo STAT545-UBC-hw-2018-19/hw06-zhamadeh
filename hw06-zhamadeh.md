@@ -128,26 +128,30 @@ ggplot(test_rwanda, aes(year, gdpPercap)) +
 Here, lets use the `do()` method in combination with the `group_by()` method that will group input data by country. The `do()` method will apply our previously defined robust linear regression function to all observations within a given country and repeat this for every country. We can see from the first few observations that we know have the slope and intercept of our linear regression model for every country.
 
 ``` r
+#apply function to all gapminder data
 rob_lin_all <- function(input_data) {
   input_data %>%
   group_by(country) %>%
-  do(lin_reg_mod(.))
+  do(rob_lin_mod(.))
 }
 knitr::kable(head(rob_lin_all(gapminder), n=10))
 ```
 
-| country     |  intercept|        slope|
-|:------------|----------:|------------:|
-| Afghanistan |   817.8748|   -0.4405854|
-| Albania     |  1376.5683|   54.4579214|
-| Algeria     |  2208.3315|   64.2810005|
-| Angola      |  4409.2758|  -23.2514578|
-| Argentina   |  5960.5514|   86.8116645|
-| Australia   |  5254.2054|  426.8518919|
-| Austria     |  1969.1715|  534.5723120|
-| Bahrain     |  8434.7619|  279.5044084|
-| Bangladesh  |   455.1799|   10.5037373|
-| Belgium     |  3897.4020|  463.8653945|
+    ## Warning in rlm.default(x, y, weights, method = method, wt.method =
+    ## wt.method, : 'rlm' failed to converge in 20 steps
+
+| country     |  intercept|       slope|
+|:------------|----------:|-----------:|
+| Afghanistan |   829.1219|   -1.102482|
+| Albania     |  1347.7760|   58.920260|
+| Algeria     |  2192.2555|   64.091127|
+| Angola      |  4389.0749|  -26.427959|
+| Argentina   |  5783.1602|   94.641154|
+| Australia   |  5524.5494|  415.036362|
+| Austria     |  2075.5793|  530.988324|
+| Bahrain     |  8878.7267|  258.232187|
+| Bangladesh  |   473.5492|    9.727567|
+| Belgium     |  3775.1538|  466.013416|
 
 #### Working with nested dataframe
 
@@ -180,6 +184,7 @@ gap_lm_coef <- nest_gap %>%
   dplyr::select(continent:estimate) %>% 
   spread(key = term, value = estimate)
 
+#print out the first 20 
 knitr::kable(head(gap_lm_coef,n=20))
 ```
 

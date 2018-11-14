@@ -97,10 +97,11 @@ ggplot(test_rwanda, aes(year, gdpPercap)) +
 Here, lets use the `do()` method in combination with the `group_by()` method that will group input data by country. The `do()` method will apply our previously defined robust linear regression function to all observations within a given country and repeat this for every country. We can see from the first few observations that we know have the slope and intercept of our linear regression model for every country.
 
 ```{r}
+#apply function to all gapminder data
 rob_lin_all <- function(input_data) {
   input_data %>%
   group_by(country) %>%
-  do(lin_reg_mod(.))
+  do(rob_lin_mod(.))
 }
 knitr::kable(head(rob_lin_all(gapminder), n=10))
 
@@ -136,6 +137,7 @@ gap_lm_coef <- nest_gap %>%
   dplyr::select(continent:estimate) %>% 
   spread(key = term, value = estimate)
 
+#print out the first 20 
 knitr::kable(head(gap_lm_coef,n=20))
 
 ```
